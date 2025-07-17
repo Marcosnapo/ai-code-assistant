@@ -1,6 +1,7 @@
 /**
  * @fileoverview Lógica principal para el Asistente de Código con IA.
- * Handles user interactions and future integration with the AI API.
+ * Maneja las interacciones del usuario y la comunicación con el servidor backend
+ * para procesar el código de forma segura.
  */
 
 // Obtener referencias a los elementos del DOM
@@ -9,13 +10,13 @@ const explainButton = document.getElementById('explainButton');
 const documentButton = document.getElementById('documentButton');
 const outputArea = document.getElementById('outputArea');
 
-// Variable para almacenar la clave de la API (null)
-const API_KEY = "";//
+const BACKEND_URL = "https://backend-sparkling-brook-1872.fly.dev/"
+
 /**
  * Muestra un mensaje de carga en el área de salida.
  */
 function showLoading() {
-    outputArea.textContent = "Thinking... Please wait, AI needs time too.";
+    outputArea.textContent = "Pensando... Por favor, espera un momento...";
     outputArea.style.color = "#007bff"; // Color azul para el mensaje de carga
 }
 
@@ -29,59 +30,65 @@ function showErrorMessage(message) {
 }
 
 /**
- * Procesa el código ingresado por el usuario utilizando la API de IA.
- * @param {string} promptText El texto del prompt a enviar a la IA.
+ * Procesa el código ingresado por el usuario enviándolo al servidor backend.
+ * @param {string} promptText El texto del prompt a enviar a la IA (a través del backend).
  */
 async function processCodeWithAI(promptText) {
     const code = codeInput.value.trim(); // Obtener el código del textarea y limpiar espacios
     if (!code) {
-        showErrorMessage("Please, introduce any code to start.");
+        showErrorMessage("Por favor, introduce algún código para procesar.");
         return;
     }
 
     showLoading(); // Mostrar mensaje de carga
 
     try {
-        let chatHistory = [];
-        chatHistory.push({ role: "user", parts: [{ text: promptText + "\n\nCódigo:\n```\n" + code + "\n```" }] });
-
-        const payload = { contents: chatHistory };
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-
-        const response = await fetch(apiUrl, {
+        // Realiza una solicitud POST a tu propio backend.
+        // El cuerpo de la solicitud contiene el prompt y el código.
+        const response = await fetch(`${BACKEND_URL}/process-code`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ promptText, code }) // Envía el prompt y el código como JSON
         });
 
+        // Verifica si la respuesta del backend fue exitosa (código de estado 2xx).
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+        }
+
+        // Parsea la respuesta del backend.
         const result = await response.json();
 
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
-            const text = result.candidates[0].content.parts[0].text;
-            outputArea.textContent = text;
+        // Muestra el texto generado por la IA en el área de salida.
+        if (result.success && result.generatedText) {
+            outputArea.textContent = result.generatedText;
             outputArea.style.color = "#333"; // Restaurar color normal
         } else {
-            showErrorMessage("IA not found, try again");
-            console.error("No spected answer of API:", result);
+            // Si la respuesta del backend no es la esperada, muestra un error.
+            showErrorMessage("No se pudo obtener una respuesta válida de la IA a través del backend.");
+            console.error("Respuesta inesperada del backend:", result);
         }
     } catch (error) {
-        showErrorMessage("An error occurred while communicating with the AI. Please check your connection..");
-        console.error("Error in API call:", error);
+        // Captura cualquier error durante la comunicación con el backend.
+        showErrorMessage(`Ocurrió un error: ${error.message}. Asegúrate de que el backend esté funcionando.`);
+        console.error("Error en la llamada al backend:", error);
     }
 }
 
 // Añadir escuchadores de eventos a los botones
 explainButton.addEventListener('click', () => {
-    processCodeWithAI("Explain the following code in detail, line by line, and its general purpose. Use clear and concise language:");
+    processCodeWithAI("Explica el siguiente código en detalle, línea por línea, y su propósito general. Usa un lenguaje claro y conciso:");
 });
 
 documentButton.addEventListener('click', () => {
-    processCodeWithAI("Generate documentation for the following code. Include an overview, parameters (if applicable), and a usage example. Format the documentation professionally.:");
+    processCodeWithAI("Genera la documentación para el siguiente código. Incluye una descripción general, parámetros (si aplica) y un ejemplo de uso. Formatea la documentación de manera profesional:");
 });
 
 // Inicializar el área de salida con un mensaje de bienvenida
-outputArea.textContent = "Ready to help you with your code. Paste your code above and click the button.";
+outputArea.textContent = "Listo para ayudarte con tu código. Pega tu código arriba y haz clic en un botón.";
 outputArea.style.color = "#666";
+
 
