@@ -23,14 +23,14 @@
 
 1.  **Clona el repositorio:**
     ```bash
-    git clone [https://github.com/tu-usuario/ai-code-assistant.git](https://github.com/tu-usuario/ai-code-assistant.git)
+    git clone [https://github.com/Marcosnapo/ai-code-assistant.git](https://github.com/Marcosnapo/ai-code-assistant.git)
     cd ai-code-assistant
     ```
 2.  **Abre `index.html`:** Simplemente abre el archivo `index.html` en tu navegador web.
 
 ## 🌐 Demo en Vivo
 
-[Aquí pondrás el enlace a tu demo en vivo ]
+[Enlace futuro ]
 
 ## 🤝 Contribuciones
 
