@@ -10,7 +10,7 @@ const explainButton = document.getElementById('explainButton');
 const documentButton = document.getElementById('documentButton');
 const outputArea = document.getElementById('outputArea');
 
-const BACKEND_URL = "https://backend-sparkling-brook-1872.fly.dev/"
+const BACKEND_URL ="https://backend-sparkling-brook-1872.fly.dev/"
 
 /**
  * Muestra un mensaje de carga en el área de salida.
