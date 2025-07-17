@@ -84,3 +84,4 @@ documentButton.addEventListener('click', () => {
 // Inicializar el área de salida con un mensaje de bienvenida
 outputArea.textContent = "Ready to help you with your code. Paste your code above and click the button.";
 outputArea.style.color = "#666";
+
